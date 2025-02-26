@@ -1,0 +1,7 @@
+# env
+.env
+
+# dev ipynb
+.ipynb_checkpoints
+dev.ipynb.DS_Store
+example.env

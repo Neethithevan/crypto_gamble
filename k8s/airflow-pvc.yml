@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-dags-pvc
+  namespace: crypto-gamble
+spec:
+  storageClassName: standard
+  # storageClassName: manual
+  # persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+
+
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: airflow-logs-pvc
+#   namespace: crypto-gamble
+# spec:
+#   storageClassName: standard
+#   # storageClassName: manual
+#   accessModes:
+#     - ReadWriteMany
+#   resources:
+#     requests:
+#       storage: 5Gi

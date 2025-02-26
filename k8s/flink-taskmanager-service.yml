@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-taskmanager-service
+  namespace: crypto-gamble
+spec:
+  selector:
+    app: flink
+    component: taskmanager
+  # type: NodePort  # Expose on a NodePort to allow access from outside
+  ports:
+    - name: data
+      protocol: TCP
+      port: 6121
+      targetPort: 6121
+    - name: taskmanager-rpc
+      protocol: TCP
+      port: 6122
+      targetPort: 6122
+    - name: jobmanager-rpc
+      protocol: TCP
+      port: 6123
+      targetPort: 6123
+    # - name: ui
+    #   protocol: TCP
+    #   port: 8081
+    #   targetPort: 8081

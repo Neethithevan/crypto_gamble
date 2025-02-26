@@ -1,0 +1,4 @@
+praw
+click
+python-dotenv
+confluent_kafka

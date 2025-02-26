@@ -1,0 +1,61 @@
+executor: KubernetesExecutor
+# serviceAccount:
+#   create: true
+#   name: airflow-worker
+
+# webserver:
+#   service:
+#     type: NodePort
+
+webserverSecretKey: "c3633a19eb0140c052e787c498bffed6"
+
+# Disable default PostgreSQL deployment
+postgresql:
+  enabled: false
+
+# Use existing PostgreSQL instance
+data:
+  metadataConnection:
+    user: "postgres"
+    pass: "postgres"
+    protocol: "postgresql"
+    host: "postgres.crypto-gamble.svc.cluster.local"  # Kubernetes DNS for your Postgres service
+    port: 5432
+    db: "airflow"
+
+dags:
+  persistence:
+    enabled: true
+    existingClaim: airflow-dags-pvc
+  mountPath: "/mnt/data/airflow-dags"
+
+# ports:
+#   airflowUI: 8090
+  
+
+# logs:
+#   persistence:
+#     enabled: true
+#     existingClaim: airflow-logs-pvc
+
+logs:
+  persistence:
+    enabled: true
+    size: 10Gi
+    # existingClaim: airflow-logs-pvc
+
+# redis:
+#   enabled: true
+
+
+# # webserver:
+# #   rate_limit_storage_url: redis://airflow-redis-master:6379/0
+# metrics:
+#   metrics_use_pattern_match: True
+
+
+
+
+
+
+

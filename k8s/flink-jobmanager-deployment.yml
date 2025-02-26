@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-jobmanager
+  namespace: crypto-gamble
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flink
+      component: jobmanager
+  template:
+    metadata:
+      labels:
+        app: flink
+        component: jobmanager
+    spec:
+      dnsPolicy: ClusterFirst  # Ensures JobManager can resolve Kubernetes services
+      containers:
+      - name: jobmanager
+        image: flink-consumer:latest
+        imagePullPolicy: Never
+        args: ["jobmanager"]
+        env:
+          - name: POSTGRES_URL
+            value: jdbc:postgresql://postgres.crypto-gamble.svc.cluster.local:5432/reddit  # Fixed PostgreSQL URL
+          - name: POSTGRES_USER
+            value: postgres
+          - name: POSTGRES_PASSWORD
+            value: postgres
+          - name: POSTGRES_DB
+            value: postgres
+          - name: KAFKA_BROKER
+            value: kafka.crypto-gamble.svc.cluster.local:9092
+          - name: KAFKA_TOPIC
+            value: reddit-topic
+          - name: KAFKA_GROUP_ID
+            value: reddit-consumer-group
+          - name: FLINK_PROPERTIES
+            value: |
+              jobmanager.rpc.address: jobmanager.crypto-gamble.svc.cluster.local
+              taskmanager.rpc.port: 6122
+              jobmanager.rpc.port: 6123
+              taskmanager.numberOfTaskSlots: 12
+              parallelism.default: 3
+              jobmanager.memory.process.size: 4096m
+              taskmanager.memory.process.size: 8192m
+          - name: DISABLE_JEMALLOC
+            value: 'true'
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 6122 # taskmanager-rpc
+        - containerPort: 6123 # jobmanager-rpx
+        - containerPort: 6124 # Blob Sever Port (required or artifact transfer)
+        - containerPort: 8081 # Web UI Port

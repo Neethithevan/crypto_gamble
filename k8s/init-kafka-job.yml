@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-kafka
+  namespace: crypto-gamble
+spec:
+  template:
+    spec:
+      restartPolicy: Never  # Ensures the job does not keep restarting
+      containers:
+        - name: init-kafka
+          image: apache/kafka:latest
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+          command: [ "/bin/bash", "-c" ]
+          args:
+          - |
+            echo "Waiting for Kafka to be available..."
+            until nc -z kafka.crypto-gamble.svc.cluster.local 9092; do
+              sleep 5
+            done
+            echo "Kafka is now available, creating topics..."
+
+            # List existing Kafka topics
+            /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka.crypto-gamble.svc.cluster.local:9092 --list
+
+            echo -e 'Creating Kafka topics...'
+            /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka.crypto-gamble.svc.cluster.local:9092 --create --if-not-exists --topic reddit-topic --replication-factor 1 --partitions 3
+
+            echo -e 'Successfully created the following topics:'
+            /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka.crypto-gamble.svc.cluster.local:9092 --list
+
+            # Create a Kafka consumer group by starting a dummy consumer
+            echo -e 'Creating consumer group reddit-consumer-group...'
+            /opt/kafka/bin/kafka-console-consumer.sh \
+              --bootstrap-server kafka.crypto-gamble.svc.cluster.local:9092 \
+              --topic reddit-topic \
+              --from-beginning \
+              --group reddit-consumer-group
+
+            sleep 2  # Give it time to register the group
+
+            echo -e 'Successfully created the following consumer groups:'
+            /opt/kafka/bin/kafka-consumer-groups.sh --list --bootstrap-server kafka.crypto-gamble.svc.cluster.local:9092
+
+
+            # - |
+            #   echo "Waiting for Kafka to be available..."
+            #   until nc -z kafka.crypto-gamble.svc.cluster.local 9092; do
+            #     sleep 5
+            #   done
+            #   echo "Kafka is now available, creating topics..."
+
+            #   /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka.crypto-gamble.svc.cluster.local:9092 --list
+
+            #   echo -e 'Creating kafka topics'
+            #   /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka.crypto-gamble.svc.cluster.local:9092 --create --if-not-exists --topic reddit-topic --replication-factor 1 --partitions 3
+
+            #   echo -e 'Successfully created the following topics:'
+            #   /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka.crypto-gamble.svc.cluster.local:9092 --list

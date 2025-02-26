@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: grafana-data-pv
+  namespace: crypto-gamble
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  # storageClassName: 
+  persistentVolumeReclaimPolicy: Retain
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany  # ✅ Must match PVC
+  # persistentVolumeReclaimPolicy: Retain  # Prevents accidental deletion
+  hostPath:
+    path: "/mnt/data/grafana_data"
+  
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data-pv-claim
+  namespace: crypto-gamble
+spec:
+  storageClassName: standard
+  # storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi

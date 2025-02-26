@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-taskmanager
+  namespace: crypto-gamble
+spec:
+  replicas: 1  # Set at least 2 TaskManagers for load balancing
+  selector:
+    matchLabels:
+      app: flink
+      component: taskmanager
+  template:
+    metadata:
+      labels:
+        app: flink
+        component: taskmanager
+    spec:
+      dnsPolicy: ClusterFirst  # Ensures TaskManager can resolve JobManager DNS
+      containers:
+      - name: taskmanager
+        image: flink-consumer:latest
+        args: ["taskmanager", "--taskmanager.registration.timeout", "5min"]  # Fixed timeout format
+        env: 
+          - name: FLINK_PROPERTIES
+            value: |
+              jobmanager.rpc.address: jobmanager.crypto-gamble.svc.cluster.local
+              jobmanager.rpc.port: 6123
+              taskmanager.rpc.port: 6122
+              taskmanager.numberOfTaskSlots: 8
+              parallelism.default: 3
+              jobmanager.memory.process.size: 2048m
+              taskmanager.memory.process.size: 8192m
+          - name: JOB_MANAGER_PORT
+            value: "6123"
+          - name: DISABLE_JEMALLOC
+            value: 'true'
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 6121  # Data exchange
+        - containerPort: 6122  # TaskManager Internal
+        - containerPort: 6123  # JobManager RPC
+        # - containerPort: 8081  # Web UI (Optional)

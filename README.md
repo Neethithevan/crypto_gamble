@@ -5,6 +5,10 @@ Crypto-Gamble is a cloud-native real-time analytics platform designed to process
 
 This project processes **Reddit posts** to extract insights about meme coin sentiment trends. Data is ingested via Kafka, processed with Flink, orchestrated by Airflow, and stored in PostgreSQL. Grafana is used to visualize key metrics.
 
+## **Architecture Diagram**
+
+![Architecture Diagram](crypto-gamble-architecture.png)
+
 ## **Data Flow & Metrics**
 ### **Data Flow**
 1. **Reddit Post Extraction**: Reddit posts related to meme coins are collected and sent to Kafka.

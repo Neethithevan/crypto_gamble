@@ -95,7 +95,7 @@ kubectl apply -f k8s/airflow-pvc.yml -n crypto-gamble
 ## Accessing User Interfaces
 ### Airflow UI
 ```sh
-kubectl port-forward svc/airflow-webserver 8080:8080 --namespace crypto-gamble
+kubectl port-forward svc/airflow-webserver 8080:8080 -n crypto-gamble
 ```
 [Access Airflow UI](http://localhost:8080)
 <p align="center" style="background-color: #1e1e1e; padding: 20px; border-radius: 15px; border: 3px solid #4caf50; box-shadow: 0px 0px 10px #4caf50;">
@@ -122,7 +122,7 @@ kubectl port-forward svc/jobmanager 8081:8081 -n crypto-gamble
 
 ### Grafana UI
 ```sh
-kubectl port-forward svc/grafana-service -n crypto-gamble 3000:3000
+kubectl port-forward svc/grafana-service 3000:3000 -n crypto-gamble
 ```
 [Access Grafana UI](http://localhost:3000)
 <p align="center" style="background-color: #1e1e1e; padding: 20px; border-radius: 15px; border: 3px solid #4caf50; box-shadow: 0px 0px 10px #4caf50;">

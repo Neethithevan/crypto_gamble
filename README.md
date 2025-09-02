@@ -15,6 +15,7 @@ Crypto-Gamble is a **cloud-native real-time analytics platform** designed to pro
 - **Airflow for pipeline orchestration.**
 - **PostgreSQL for structured storage and querying.**
 - **Grafana dashboards** for real-time visualization.
+- **Datadog integration** for monitoring and alerting.
 
 ## System Workflow
 1. **Reddit Post Extraction**: Collects posts related to meme coins.
@@ -23,6 +24,8 @@ Crypto-Gamble is a **cloud-native real-time analytics platform** designed to pro
 4. **Airflow Orchestration**: Automates pipeline execution.
 5. **PostgreSQL Storage**: Stores processed data for further use.
 6. **Grafana Visualization**: Displays insights through dashboards.
+7. **Monitoring with Datadog**: Tracks system performance and health.
+
 
 ## Prerequisites
 Ensure you have the following installed before deployment:
@@ -30,6 +33,7 @@ Ensure you have the following installed before deployment:
 - **Minikube**
 - **Kubectl**
 - **Helm**
+- **Git**
 
 ## Deployment Steps
 ### Step 1: Configure Environment Variables
@@ -71,16 +75,7 @@ Verify deployments:
 kubectl get pods -n crypto-gamble
 ```
 
-### Step 5: Install and Configure Airflow
-```sh
-helm install airflow apache-airflow/airflow -n crypto-gamble -f k8s/airflow-values.yml
-```
-Verify Airflow installation:
-```sh
-kubectl get pods -n crypto-gamble
-```
-
-### Step 6: Mount DAGs to Airflow
+### Step 5: Mount DAGs to Airflow
 ```sh
 minikube mount airflow/dags:/mnt/data/airflow-dags
 ```
@@ -92,10 +87,46 @@ kubectl delete pvc airflow-dags-pvc -n crypto-gamble
 kubectl apply -f k8s/airflow-pvc.yml -n crypto-gamble
 ```
 
+### Step 6: Install and Configure Airflow
+```sh
+helm install airflow apache-airflow/airflow -n crypto-gamble -f k8s/airflow-values.yml
+```
+Verify Airflow installation:
+```sh
+kubectl get pods -n crypto-gamble
+```
+
+### Step 7: Install and Configure Datadogs Agent
+Intall Helm Chart for Datadog Agent
+```sh
+helm repo add datadog https://helm.datadoghq.com
+helm repo update
+```
+```sh
+kubectl create secret generic datadog-secret \
+  --from-literal api-key=<YOUR_API_KEY> \
+  -n crypto-gamble
+```
+
+
+```sh
+helm install datadog-agent datadog/datadog -n crypto-gamble -f k8s/datadog-agent-values.yml
+```
+
+```sh
+helm upgrade datadog-agent datadog/datadog -n crypto-gamble -f k8s/datadog-agent-values.yml
+helm uninstall datadog-agent -n crypto-gamble
+```
+
+Verify Airflow installation:
+```sh
+kubectl get pods -n crypto-gamble
+```
+
 ## Accessing User Interfaces
 ### Airflow UI
 ```sh
-kubectl port-forward svc/airflow-webserver 8080:8080 -n crypto-gamble
+kubectl port-forward svc/airflow-api-server 8080:8080 -n crypto-gamble
 ```
 [Access Airflow UI](http://localhost:8080)
 <p align="center" style="background-color: #1e1e1e; padding: 20px; border-radius: 15px; border: 3px solid #4caf50; box-shadow: 0px 0px 10px #4caf50;">
@@ -136,6 +167,9 @@ kubectl port-forward svc/grafana-service 3000:3000 -n crypto-gamble
 2. **Create Data Source**
    - Navigate to `Settings` → `Data Sources` → `Add Data Source`
    - Select **PostgreSQL** and enter connection details
+    - URL: `postgresql:5432`
+    - Database: `reddit`
+   - Click **Save & Test**
 3. **Import Dashboard**
    - Go to `Dashboards` → `Import`
    - Upload `garfana_dashboard/MemeCoinMagic-Dashboard.json`
@@ -147,4 +181,3 @@ To remove all resources:
 kubectl delete namespace crypto-gamble
 minikube stop
 ```
-

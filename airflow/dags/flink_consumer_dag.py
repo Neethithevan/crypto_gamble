@@ -1,9 +1,7 @@
 from airflow import DAG
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
-from airflow.operators.dummy import DummyOperator
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.operators.empty import EmptyOperator
 from datetime import datetime, timedelta
-from kubernetes.client import models as k8s
-from kubernetes.client import V1Volume, V1VolumeMount, V1HostPathVolumeSource
 
 """
 # Example of resource declaration
@@ -48,14 +46,14 @@ with DAG(
     'K8S-FLINK-CONSUMER',
     default_args=default_args,
     description='A pipeline to process meme coin sentiments from Reddit using Kafka & Flink',
-    schedule_interval= None,
+    schedule= None,
     start_date=datetime.now(),
     catchup=False,
     tags=['meme', 'coins', 'sentiment'],
 ) as dag:
 
-    # Dummy start task
-    start = DummyOperator(task_id='start')
+    # Empty start task
+    start = EmptyOperator(task_id='start')
 
     submit_flink_job = KubernetesPodOperator(
         task_id='submit_flink_job',
@@ -71,31 +69,17 @@ with DAG(
             '--pyFiles /opt/flink_consumer/usrlib/ -d '
         ],
         env_vars={
-            # "FLINK_PROPERTIES": "jobmanager.rpc.address=jobmanager.crypto-gamble.svc.cluster.local\nparallelism.default=8",
             "FLINK_PARALLELISM": "3", # Default to 1
-            # "FLINK_AUTO_OFFSET" :  "earliest", # Can change between earliest and latest # Default to earliest
-            # "FLINK_SCAN_STARTUP_MODE" : "earliest-offset", # Can change between earliest-offset and latest-offset # Default to earliest-offset
-            # "POSTGRES_URL": "jdbc:postgresql://postgres.crypto-gamble.svc.cluster.local:5432/reddit",
-            # "POSTGRES_USER": "postgres",
-            # "POSTGRES_PASSWORD": "postgres",
-            # "POSTGRES_DB": "postgres",
-            # "REDDIT_DATABASE": "reddit",
-            # "REDDIT_POSTS_TABLE": "reddit_posts",
-            # "KAFKA_BROKER": "kafka.crypto-gamble.svc.cluster.local:9092",
-            # "KAFKA_TOPIC": "reddit-topic",
-            # "KAFKA_GROUP_ID": "reddit-consumer-group",
-            # "KAFKA_SOURCE_TABLE": "reddit_source",
         },
         labels={"app": "flink-jobmanager"},
         is_delete_operator_pod=True,
-        in_cluster=True,
         get_logs=True,
         # volumes=[host_path_volume], # Mount Volume to develop
         # volume_mounts=[volume_mount], # 
     )
 
-    # Dummy end task
-    end = DummyOperator(task_id='end')
+    # Empty end task
+    end = EmptyOperator(task_id='end')
 
     # Define dependencies
     start >> submit_flink_job >> end

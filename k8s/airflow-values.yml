@@ -1,11 +1,16 @@
 executor: KubernetesExecutor
-# serviceAccount:
-#   create: true
-#   name: airflow-worker
 
-# webserver:
-#   service:
-#     type: NodePort
+airflow:
+  # Global pip packages installed into all Airflow containers
+  pipPackages:
+    # Pin exactly; this version is just an example—match constraints for 3.0.2 + your Python
+    - "apache-airflow-providers-cncf-kubernetes==10.0.0"
+
+
+webserver:
+  defaultUser:
+    username: admin
+    password: admin
 
 webserverSecretKey: "c3633a19eb0140c052e787c498bffed6"
 
@@ -29,30 +34,11 @@ dags:
     existingClaim: airflow-dags-pvc
   mountPath: "/mnt/data/airflow-dags"
 
-# ports:
-#   airflowUI: 8090
-  
-
-# logs:
-#   persistence:
-#     enabled: true
-#     existingClaim: airflow-logs-pvc
 
 logs:
   persistence:
     enabled: true
     size: 10Gi
-    # existingClaim: airflow-logs-pvc
-
-# redis:
-#   enabled: true
-
-
-# # webserver:
-# #   rate_limit_storage_url: redis://airflow-redis-master:6379/0
-# metrics:
-#   metrics_use_pattern_match: True
-
 
 
 
